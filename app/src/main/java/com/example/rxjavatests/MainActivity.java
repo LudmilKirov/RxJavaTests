@@ -10,6 +10,7 @@ import io.reactivex.Observer;
 import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
@@ -30,21 +31,29 @@ public class MainActivity extends AppCompatActivity {
 
         //Observer subscribing to observable
         animalsObservable
-                .observeOn(Schedulers.io())
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .subscribe(animalsObserver);
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .filter(new Predicate<String>() {
+                    @Override
+                    public boolean test(String s) throws Exception {
+                        return s.toLowerCase().startsWith("b");
+                    }
+                })
+                .subscribeWith(animalsObserver);
     }
 
     private Observer<String> getAnimalsObserver() {
         return new Observer<String>() {
+
             @Override
             public void onSubscribe(Disposable d) {
                 Log.d(TAG, "onSubscribe: ");
+                disposable=d;
             }
 
             @Override
             public void onNext(String s) {
-                Log.d(TAG, "onNext: " + s);
+                Log.d(TAG, "Name: " + s);
             }
 
             @Override
@@ -61,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private Observable<String> getAnimalsObservable() {
-        return Observable.just("Ant", "Bee", "Cat", "Dog", "Fox");
+        return Observable.fromArray("Ant", "Bee", "Cat", "Dog", "Fox","Bat","Bee","Bear","Crab","Cod","Fox");
     }
 
     @Override
